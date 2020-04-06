@@ -1,0 +1,336 @@
+﻿@page
+@{}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Fast Food chains</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+
+    <div>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+            <a class="navbar-brand" href="#">Fast Food Chains</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <button class="btn btn-dark" data-toggle="modal" data-target="#add">Add New Food Chain</button>
+                    </li>
+                  
+                </ul>
+                
+            </div>
+        </nav>
+
+
+        <div class="container">
+           
+            <table class="table table-striped  table-primary table-bordered">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th>Name</th>
+                        <th >Annual Revenue ($ billions) </th>
+                        <th >Employees</th>
+                        <th>Established Year</th>
+                        
+
+                    </tr>
+                </thead>
+                <tbody id="foodchains">
+                  
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script>
+        var uri = 'api/FastFoodChains';
+
+        $(document).ready(function () {
+            
+            $.getJSON(uri)
+                .done(function (data) {
+
+                    $("#foodchain").tmpl(data).appendTo("#foodchains");
+                });
+        });
+
+
+
+        function getAll() {
+
+               $.getJSON(uri)
+                   .done(function (data) {
+
+                       $("#foodchains").text("");
+
+                    $("#foodchain").tmpl(data).appendTo("#foodchains");
+                });
+
+        }
+
+        function addFoodChain() {
+            var _name = $('#name').val();
+            var _revenue = parseInt($('#revenue').val());
+            var _employees = parseInt($('#employees').val());
+            var _establishedYear = parseInt($('#establishedYear').val());
+            
+           
+
+
+            var foodChain = {
+                name :  _name,
+                revenue :_revenue,
+                employees:  _employees, 
+                establishedYear :_establishedYear 
+             
+           
+            };
+
+            $.ajax({
+                type: "POST",
+                url: uri,
+                data: JSON.stringify(foodChain),
+                contentType: "application/json; charset=utf-8"
+            }).done(function (response) {
+                $("#result").html("Added");
+                getAll();
+            }).fail(function (jqXHR, textStatus) {
+                          $("#result").html("Failed to add");
+               });
+
+
+
+
+        }
+
+
+
+
+
+        function  updateFoodChain() {
+           var _name = $('#_name').val();
+            var _revenue = parseInt($('#_revenue').val());
+            var _employees = parseInt($('#_employees').val());
+            var _establishedYear = parseInt($('#_establishedYear').val());
+          
+
+
+            
+            var foodChain = {
+                id:  parseInt($('#_id').val()),
+                name :  _name,
+                revenue :_revenue,
+                employees:  _employees, 
+                establishedYear :_establishedYear 
+             
+           
+           
+           
+            };
+
+            $.ajax({
+                type: "PUT",
+                url: uri+"/"+ $('#_id').val(),
+                data: JSON.stringify(foodChain),
+                contentType: "application/json; charset=utf-8"
+            }).done(function (response) {
+                $("#resultUpdate").html("Updated");
+                getAll();
+            }).fail(function (jqXHR, textStatus) {
+                          $("#resultUpdate").html("Failed to update");
+               });;
+
+
+
+
+        }
+
+
+
+        function remove(id) {
+
+
+          var yes =  confirm(" Delete this  food chain?");
+
+            if (yes) {
+                $.ajax({
+                    type: "DELETE",
+                    url: uri + "/" + id,
+
+                }).done(function (response) {
+
+                    getAll();
+                });
+
+            }
+
+
+        }
+
+
+         
+
+
+        function show(id) {
+
+             $.ajax({
+                type: "GET",
+                url: uri+"/"+id,
+               contentType: "application/json"
+             }).done(function (response) {
+
+                  $('#_id').val(response.id);
+                 $('#_name').val(response.name);
+                 $('#_revenue').val(response.revenue);
+                 $('#_employees').val(response.employees);
+                 $('#_establishedYear').val(response.establishedYear);
+             
+
+              
+
+
+            });
+
+
+        }
+    </script>
+
+    
+
+    <script id="foodchain" type="text/x-jquery-tmpl">
+       
+        <tr>
+
+            <td> ${name}</td>
+            <td>${revenue}</td>
+            <td>${employees}</td>
+            <td>${establishedYear}</td>
+           
+
+            <td> <button class="btn btn-outline-primary" onclick="show('${id}')" data-toggle="modal" data-target="#update">Update</button></td>
+            <td> <a href="#" class="btn btn-outline-danger" onclick="remove('${id}')">Delete</a></td>
+
+        </tr>
+    </script>
+
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="add">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" id="name">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Revenue</label>
+                            <input type="number" class="form-control" id="revenue">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Employees</label>
+                            <input type="number" class="form-control" id="employees" >
+
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Established Year</label>
+                            <input type="number" class="form-control" id="establishedYear" >
+
+                        </div>
+                        
+
+                        <div class="form-group" id="result">
+
+
+                        </div>
+                        <button type="button" onclick="addFoodChain()" class="btn btn-primary">Add Food Chain</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="update">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+
+                        <div class="form-group">
+
+                            <input type="hidden" class="form-control" id="_id">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" id="_name">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Revenue</label>
+                            <input type="number" class="form-control" id="_revenue">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Employees</label>
+                            <input type="number" class="form-control" id="_employees">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Established Year</label>
+                            <input type="number" class="form-control" id="_establishedYear">
+
+                        </div>
+
+                        <div class="form-group" id="resultUpdate">
+
+
+                        </div>
+                        <button type="button" onclick="updateFoodChain()" class="btn btn-primary">Update Food Chain</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
